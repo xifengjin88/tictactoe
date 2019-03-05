@@ -26,6 +26,13 @@ class Board extends React.Component {
     };
   }
 
+  componentDidMount() {
+    if (this.state.currentPlayer === 'CPU') {
+      console.log(this.state.currentPlayer);
+      this.computerMove(this.state.availableMoves, this.state.board);
+    }
+  }
+
   resetAvailableMoves = () => {
     const moves = [];
     for (let i = 0; i < 9; i += 1) {
@@ -49,48 +56,63 @@ class Board extends React.Component {
       this.setState({ error: 'Please choose a correct option' });
       return;
     }
+    const newBoard = [
+      ...this.state.board.slice(0, index),
+      1,
+      ...this.state.board.slice(index + 1)
+    ];
+    const { win, draw, winner } = this.checkWin(newBoard);
+
     this.setState(
       ({ board }) => ({
-        board: [...board.slice(0, index), 1, ...board.slice(index + 1)],
-        availableMoves: this.calculateAvailableMoves(index)
+        board: newBoard,
+        availableMoves: this.calculateAvailableMoves(index),
+        currentPlayer: 'CPU',
+        win,
+        draw,
+        winner
       }),
       () => {
-        console.log(
-          'board',
-          this.state.board,
-          'index',
-          index,
-          'this.state.availableMoves',
-          this.state.availableMoves
-        );
-        this.computerMove(this.state.availableMoves);
+        this.props.handleDisplayMessage({
+          win: this.state.win,
+          winner: this.state.winner,
+          draw: this.state.draw
+        });
+        this.computerMove(this.state.availableMoves, this.state.board);
       }
     );
   };
 
-  computerMove = availableMoves => {
+  computerMove = (availableMoves, board) => {
     if (availableMoves.length === 0) return;
+    if (this.state.draw || this.state.win) {
+      return;
+    }
     const randomIndex =
       availableMoves[Math.floor(Math.random() * availableMoves.length)];
+    const newBoard = [
+      ...board.slice(0, randomIndex),
+      0,
+      ...board.slice(randomIndex + 1)
+    ];
+    const { win, draw, winner } = this.checkWin(newBoard);
+
     this.setState(
-      ({ board }) => ({
-        board: [
-          ...board.slice(0, randomIndex),
-          0,
-          ...board.slice(randomIndex + 1)
-        ],
-        availableMoves: this.calculateAvailableMoves(randomIndex)
+      () => ({
+        board: newBoard,
+        availableMoves: this.calculateAvailableMoves(randomIndex),
+        currentPlayer: 'PLAYER',
+        win,
+        draw,
+        winner
       }),
-      () =>
-        console.log(
-          'after computer move',
-          'board',
-          this.state.board,
-          'index',
-          randomIndex,
-          'this.state.availableMoves',
-          this.state.availableMoves
-        )
+      () => {
+        this.props.handleDisplayMessage({
+          win: this.state.win,
+          winner: this.state.winner,
+          draw: this.state.draw
+        });
+      }
     );
   };
 
@@ -103,11 +125,11 @@ class Board extends React.Component {
     });
   }
 
-  checkWin() {
+  checkWin(board) {
     let winner = null;
     let win = false;
     let draw = false;
-    const board = this.state.board;
+
     for (let winRow = 0; winRow < this.state.winningMoves.length; winRow += 1) {
       const [win1, win2, win3] = this.state.winningMoves[winRow];
       if (board[win1] === 1 && board[win2] === 1 && board[win3] === 1) {
@@ -120,7 +142,7 @@ class Board extends React.Component {
         draw = true;
       }
     }
-    this.setState({ winner, win, draw });
+    return { winner, win, draw };
   }
   render() {
     return (
@@ -131,6 +153,13 @@ class Board extends React.Component {
               key={index}
               piece={piece}
               handlePlayerMoveClick={() => {
+                if (
+                  this.state.currentPlayer === 'CPU' ||
+                  this.state.draw ||
+                  this.state.win
+                ) {
+                  return;
+                }
                 this.handlePlayerMoveClick(index);
               }}
             />
