@@ -9,7 +9,9 @@
     "@emotion/styled": "10.0.7",
     "react": "16.8.3",
     "react-dom": "16.8.3",
-    "react-scripts": "2.0.3"
+    "react-redux": "6.0.1",
+    "react-scripts": "2.0.3",
+    "redux": "4.0.1"
   },
   "devDependencies": {},
   "scripts": {
