@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+
 import Game from './src/components/game.component';
 
 class App extends React.Component {

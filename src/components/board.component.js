@@ -21,3 +21,4 @@ const Game = ({ board, handlePlayerChoose, availableMoves, win, draw }) => {
 };
 
 export default Game;
+
